@@ -21,32 +21,56 @@ function App() {
     return (
         <div className="App">
             <SearchBar />
-            <NewsFeed />
+            <h2>In the News</h2>
+            <NewsFeed endpoint={null} items={json.news} />
+            <h2>At ESDC</h2>
+            <ESDCFeed endpoint={null} items={json.news} />
         </div>
     );
 }
 
-class NewsFeed extends React.Component {
+class Feed extends React.Component {
     constructor(props) {
         super(props);
-
-        // putting this here for now, but eventually this will
-        // be pulled from an AJAX request after component has
-        // mounted
+        
+        // set any initial state coming from the props
         this.state = {
-            items: json.news
-        };
+            endpoint: this.props.endpoint,
+            items: this.props.items
+        }
     }
 
+    fetchItems(userId, timestamp) {
+        // TODO: will set up to use this.endpoint
+        var newItems = dummyAJAXResponse(userId, timestamp);
+        this.setState(state => {
+            return { items: state.items.concat(newItems) };
+        });
+    }
+
+    getItems() {
+        return this.state.items.slice()  // shallow copy of array
+            .sort((a, b) => b - a);      // sort descending
+    }
+}
+
+class NewsFeed extends Feed {
     componentDidMount() {
         setInterval(() => {
-            var newItems = dummyAJAXResponse(null, null);
-            this.setState(state => {
-                return { items: state.items.concat(newItems) };
-            });
+            this.fetchItems(null, null);
         }, FETCH_DELAY*1000);
     }
 
+    render() {
+        var listItems = this.getItems()
+            .map((item) =>
+                <NewsItem key={item.id} source={item.source} title={item.title} text={item.text} />
+            );
+        return <ul className="NewsFeed">{listItems}</ul>;
+    }
+}
+
+class ESDCFeed extends Feed {
     render() {
         var listItems = this.state.items.slice()  // shallow copy of array
             .sort((a, b) => b - a)                // sort descending
