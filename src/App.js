@@ -32,10 +32,10 @@ function App() {
             <div className="App">
                 <Switch>
                     <Route path="/overview/:itemId">
-                        <Overview />
+                        <OverviewPage />
                     </Route>
                     <Route path="/">
-                        <Home />
+                        <HomePage />
                     </Route>
                 </Switch>
             </div>
@@ -46,7 +46,8 @@ function App() {
 
 // HOME COMPONENTS -----------------------------------------------
 
-function Home() {
+// TODO: Need to update endpoints with REST API endpoints
+function HomePage() {
     return (
         <div>
             <SearchBar />
@@ -60,6 +61,11 @@ function Home() {
     );
 }
 
+/**
+ * This abstract class forms the basis for multiple feed components and
+ * defines the basic functionality for making AJAX requests to update
+ * feeds
+ */
 class Feed extends React.Component {
     constructor(props) {
         super(props);
@@ -96,7 +102,13 @@ class NewsFeed extends Feed {
     render() {
         var listItems = this.getItems()
             .map((item) =>
-                <NewsItem key={item.id} id={item.id} source={item.source} title={item.title} text={item.text} />
+                <NewsItem
+                    key={item.id}
+                    id={item.id}
+                    source={item.source}
+                    title={item.title}
+                    text={item.text}
+                />
             );
         return <ul className="NewsFeed">{listItems}</ul>;
     }
@@ -106,7 +118,13 @@ class ESDCFeed extends Feed {
     render() {
         var listItems = this.getItems()
             .map((item) =>
-                <NewsItem key={item.id} id={item.id} source={item.source} title={item.title} text={item.text} />
+                <NewsItem
+                    key={item.id}
+                    id={item.id}
+                    source={item.source}
+                    title={item.title}
+                    text={item.text}
+                />
             );
         return <ul className="ESDCFeed">{listItems}</ul>;
     }
@@ -128,11 +146,20 @@ class RecommendFeed extends Feed {
     }
 }
 
+/**
+ * Defines the component for a news item as a whole, including all
+ * peripheral elements (e.g., overview link)
+ */
 function NewsItem(props) {
     return (
         <li className="NewsItem">
             <div>
-                <NewsSummary id={props.id} source={props.source} title={props.title} text={props.text} />
+                <NewsSummary
+                    id={props.id}
+                    source={props.source}
+                    title={props.title}
+                    text={props.text}
+                />
                 <p><Link to={"/overview/"+props.id}>Overview</Link></p>
             </div>
         </li>
@@ -162,18 +189,27 @@ function SearchBar() {
 
 // OVERVIEW COMPONENTS -----------------------------------------------
 
-function Overview() {
+function OverviewPage() {
     let { itemId } = useParams();
 
-    let item = json.news[itemId-1];  // this will actually need a DB query
+    let item = json.news[itemId-1];  // TODO: this will actually need a DB query
 
     return (
         <div>
-            <NewsSummary key={item.id} id={item.id} source={item.source} title={item.title} text={item.text} />
+            <NewsSummary
+                key={item.id}
+                id={item.id}
+                source={item.source}
+                title={item.title}
+                text={item.text}
+            />
             <h2>Related News</h2>
             <p>Other news items here</p>
         </div>
     );
 }
+
+
+
 
 export default App;
