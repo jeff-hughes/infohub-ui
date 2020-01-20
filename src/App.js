@@ -17,6 +17,7 @@ function dummyAJAXResponse(userId, timestamp) {
 function App() {
     return (
         <div className="App">
+            <SearchBar />
             <NewsFeed />
         </div>
     );
@@ -45,6 +46,15 @@ function NewsItem(props) {
                 <p className="text">{props.text}</p>
             </div>
         </li>
+    );
+}
+
+function SearchBar() {
+    return (
+        <form>
+            <input type="text" className="SearchBar" />
+            <input type="submit" className="SearchSubmit" value="Search" />
+        </form>
     );
 }
 

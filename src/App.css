@@ -1,25 +1,60 @@
+body {
+    background-color: #eee;
+}
 .App {
-  /*text-align: center;*/
+    background-color: #fff;
+    margin: 0 auto;
+    max-width: 1000px;
+    padding: 25px;
 }
 
 .NewsFeed {
     list-style-type: none;
+    padding: 0;
 }
 
 .NewsItem {
-    border: #eee 1px solid;
-    padding: 0 20px;
+    /*border: #eee 1px solid;*/
+    padding: 20px;
 }
 
-.NewsItem:nth-child(even) {
+.NewsItem:nth-child(odd) {
     background: #f2f2f2;
 }
 
 .NewsItem .title {
-    margin-bottom: 0;
+    margin: 0;
 }
 
 .NewsItem .source {
     font-style: italic;
     margin-top: 0;
+}
+
+.NewsItem .text {
+    margin-bottom: 0;
+}
+
+.SearchBar {
+    border: 0;
+    border-radius: 0;
+    box-shadow: 0px 0px 5px #ddd;
+    font-size: 18px;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    position: relative;
+    top: -1px;
+    width: 83%;
+}
+
+.SearchSubmit {
+    background-color: #1e88e5;
+    border: 0;
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    margin-left: 10px;
+    padding: 9px;
+    width: 13%;
+
 }
