@@ -1,4 +1,12 @@
 import React from 'react';
+import { 
+    HashRouter as Router, 
+    Switch, 
+    Route, 
+    Link,
+    useParams
+} from 'react-router-dom';
+
 import './App.css';
 
 const FETCH_DELAY = 5;  // delay in seconds between fetching news items
@@ -17,9 +25,30 @@ function dummyAJAXResponse(userId, timestamp) {
     return item;
 }
 
+
 function App() {
     return (
-        <div className="App">
+        <Router>
+            <div className="App">
+                <Switch>
+                    <Route path="/overview/:itemId">
+                        <Overview />
+                    </Route>
+                    <Route path="/">
+                        <Home />
+                    </Route>
+                </Switch>
+            </div>
+        </Router>
+    );
+}
+
+
+// HOME COMPONENTS -----------------------------------------------
+
+function Home() {
+    return (
+        <div>
             <SearchBar />
             <h2>In the News</h2>
             <NewsFeed endpoint={null} items={json.news} />
@@ -43,6 +72,7 @@ class Feed extends React.Component {
     fetchItems(userId, timestamp) {
         // TODO: will set up to use this.endpoint
         var newItems = dummyAJAXResponse(userId, timestamp);
+        json.news = json.news.concat(newItems);
         this.setState(state => {
             return { items: state.items.concat(newItems) };
         });
@@ -64,7 +94,7 @@ class NewsFeed extends Feed {
     render() {
         var listItems = this.getItems()
             .map((item) =>
-                <NewsItem key={item.id} source={item.source} title={item.title} text={item.text} />
+                <NewsItem key={item.id} id={item.id} source={item.source} title={item.title} text={item.text} />
             );
         return <ul className="NewsFeed">{listItems}</ul>;
     }
@@ -75,7 +105,7 @@ class ESDCFeed extends Feed {
         var listItems = this.state.items.slice()  // shallow copy of array
             .sort((a, b) => b - a)                // sort descending
             .map((item) =>
-                <NewsItem key={item.id} source={item.source} title={item.title} text={item.text} />
+                <NewsItem key={item.id} id={item.id} source={item.source} title={item.title} text={item.text} />
             );
         return <ul className="NewsFeed">{listItems}</ul>;
     }
@@ -85,11 +115,20 @@ function NewsItem(props) {
     return (
         <li className="NewsItem">
             <div>
-                <h3 className="title">{props.title}</h3>
-                <p className="source">{props.source}</p>
-                <p className="text">{props.text}</p>
+                <NewsSummary id={props.id} source={props.source} title={props.title} text={props.text} />
+                <p><Link to={"/overview/"+props.id}>Overview</Link></p>
             </div>
         </li>
+    );
+}
+
+function NewsSummary(props) {
+    return (
+        <div>
+            <h3 className="title">{props.title}</h3>
+            <p className="source">{props.source}</p>
+            <p className="text">{props.text}</p>
+        </div>
     );
 }
 
@@ -99,6 +138,24 @@ function SearchBar() {
             <input type="text" className="SearchBar" />
             <input type="submit" className="SearchSubmit" value="Search" />
         </form>
+    );
+}
+
+
+
+// OVERVIEW COMPONENTS -----------------------------------------------
+
+function Overview() {
+    let { itemId } = useParams();
+
+    let item = json.news[itemId-1];  // this will actually need a DB query
+
+    return (
+        <div>
+            <NewsSummary key={item.id} id={item.id} source={item.source} title={item.title} text={item.text} />
+            <h2>Related News</h2>
+            <p>Other news items here</p>
+        </div>
     );
 }
 

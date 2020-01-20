@@ -41,7 +41,7 @@ body {
     margin-top: 0;
 }
 
-.NewsItem .text {
+.NewsItem p:last-child {
     margin-bottom: 0;
 }
 
