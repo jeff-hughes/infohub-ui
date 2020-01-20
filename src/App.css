@@ -1,6 +1,7 @@
 body {
     background-color: #eee;
 }
+
 .App {
     background-color: #fff;
     margin: 0 auto;
@@ -8,7 +9,7 @@ body {
     padding: 25px;
 }
 
-.NewsFeed {
+.NewsFeed, .ESDCFeed, .RecommendFeed {
     list-style-type: none;
     padding: 0;
 }

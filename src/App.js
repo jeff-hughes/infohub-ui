@@ -54,6 +54,8 @@ function Home() {
             <NewsFeed endpoint={null} items={json.news} />
             <h2>At ESDC</h2>
             <ESDCFeed endpoint={null} items={json.news} />
+            <h2>Recommended for You</h2>
+            <RecommendFeed endpoint={null} items={json.news} />
         </div>
     );
 }
@@ -102,12 +104,27 @@ class NewsFeed extends Feed {
 
 class ESDCFeed extends Feed {
     render() {
-        var listItems = this.state.items.slice()  // shallow copy of array
-            .sort((a, b) => b - a)                // sort descending
+        var listItems = this.getItems()
             .map((item) =>
                 <NewsItem key={item.id} id={item.id} source={item.source} title={item.title} text={item.text} />
             );
-        return <ul className="NewsFeed">{listItems}</ul>;
+        return <ul className="ESDCFeed">{listItems}</ul>;
+    }
+}
+
+class RecommendFeed extends Feed {
+    render() {
+        var listItems = this.getItems()
+            .map((item) =>
+                <NewsItem
+                    key={item.id}
+                    id={item.id}
+                    source={item.source}
+                    title={item.title}
+                    text={item.text}
+                />
+            );
+        return <ul className="RecommendFeed">{listItems}</ul>;
     }
 }
 
