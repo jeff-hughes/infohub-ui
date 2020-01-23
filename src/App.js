@@ -4,6 +4,7 @@ import {
     Switch, 
     Route, 
     Link,
+    Redirect,
     useParams
 } from 'react-router-dom';
 
@@ -49,6 +50,9 @@ class App extends React.Component {
                     <Switch>
                         <Route path="/overview/:itemId">
                             <OverviewPage />
+                        </Route>
+                        <Route path="/search/:terms">
+                            <SearchPage />
                         </Route>
                         <Route path="/">
                             <HomePage />
@@ -202,13 +206,32 @@ function NewsSummary(props) {
     );
 }
 
-function SearchBar() {
-    return (
-        <form>
-            <input type="text" className="SearchBar" />
-            <input type="submit" className="SearchSubmit" value="Search" />
-        </form>
-    );
+class SearchBar extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            submitted: false,
+            search_terms: ''
+        };
+    }
+
+    searchSubmit(e) {
+        e.preventDefault();
+        this.setState({ submitted: true, search_terms: document.getElementById('SearchBar').value });
+    }
+
+    render() {
+        if (this.state.submitted) {
+            return <Redirect to={"/search/"+this.state.search_terms} />;
+        } else {
+            return (
+                <form onSubmit={this.searchSubmit.bind(this)}>
+                    <input type="text" className="SearchBar" id="SearchBar" />
+                    <input type="submit" className="SearchSubmit" value="Search" />
+                </form>
+            );
+        }
+    }
 }
 
 
@@ -234,6 +257,17 @@ function OverviewPage() {
         </Fragment>
     );
 }
+
+
+
+// SEARCH COMPONENTS -----------------------------------------------
+
+function SearchPage() {
+    let { terms } = useParams();
+
+    return <p>You searched for {terms}</p>;
+}
+
 
 
 
