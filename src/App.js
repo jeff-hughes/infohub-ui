@@ -72,11 +72,11 @@ class App extends React.Component {
 function HomePage() {
     return (
         <Fragment>
-            <h2>In the News</h2>
+            <h2 class="font-regular">In the News</h2>
             <NewsFeed endpoint={null} items={json.news} />
-            <h2>At ESDC</h2>
+            <h2 class="font-regular">At ESDC</h2>
             <ESDCFeed endpoint={null} items={json.news} />
-            <h2>Recommended for You</h2>
+            <h2 class="font-regular">Recommended for You</h2>
             <RecommendFeed endpoint={null} items={json.news} />
         </Fragment>
     );
@@ -190,7 +190,7 @@ function NewsItem(props) {
                     title={props.title}
                     text={props.text}
                 />
-                <p><Link to={"/overview/"+props.id}>Overview</Link></p>
+                <p><Link to={"/overview/"+props.id} class="btn btn-xs cyan lighten-1">Overview</Link></p>
             </div>
         </li>
     );
@@ -226,8 +226,12 @@ class SearchBar extends React.Component {
         } else {
             return (
                 <form onSubmit={this.searchSubmit.bind(this)}>
-                    <input type="text" className="SearchBar" id="SearchBar" />
-                    <input type="submit" className="SearchSubmit" value="Search" />
+                    <div class="SearchBarContainer container-fluid">
+                        <div class="row">
+                            <div class="col-xs-10"><input type="text" className="SearchBar" id="SearchBar" /></div>
+                            <div class="col-xs-2"><input type="submit" className="SearchSubmit cyan" value="Search" /></div>
+                        </div>
+                    </div>
                 </form>
             );
         }
