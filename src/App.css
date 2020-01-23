@@ -9,6 +9,12 @@ body {
     padding: 25px;
 }
 
+.simfetch {
+    position: fixed;
+    top: 5px;
+    left: 5px;
+}
+
 .NewsFeed, .ESDCFeed, .RecommendFeed {
     list-style-type: none;
     padding: 0;

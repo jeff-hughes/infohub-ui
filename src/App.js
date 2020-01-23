@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { 
     HashRouter as Router, 
     Switch, 
@@ -9,13 +9,13 @@ import {
 
 import './App.css';
 
-const FETCH_DELAY = 5;  // delay in seconds between fetching news items
+//const FETCH_DELAY = 5;  // delay in seconds between fetching news items
 var test_id_counter = 3; // incremented with each call of dummyAJAXResponse()
 
 var json = {
     'news': [
-        { 'id': 1, 'source': 'ESPN', 'title': 'Sportsball champions win the sportsball tournament again!', 'text': "I don't understand teh sports" },
-        { 'id': 2, 'source': 'Hacker News', 'title': '1337 haX0rs are 1337', 'text': "Turns out I don't understand hacking either" }
+        { 'id': 1, 'source': 'Hacker News', 'title': '1337 haX0rs are 1337', 'text': "Turns out I don't understand hacking either" },
+        { 'id': 2, 'source': 'ESPN', 'title': 'Sportsball champions win the sportsball tournament again!', 'text': "I don't understand teh sports" }
     ]
 }
 
@@ -26,21 +26,39 @@ function dummyAJAXResponse(userId, timestamp) {
 }
 
 
-function App() {
-    return (
-        <Router>
-            <div className="App">
-                <Switch>
-                    <Route path="/overview/:itemId">
-                        <OverviewPage />
-                    </Route>
-                    <Route path="/">
-                        <HomePage />
-                    </Route>
-                </Switch>
-            </div>
-        </Router>
-    );
+const UserContext = React.createContext();
+
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            user: {
+                userId: null,
+                name: 'Guest'
+            }
+        }
+    }
+
+    render() {
+        return (
+            <Router>
+            <UserContext.Provider value={this.state.user}>
+                <div className="App">
+                    <SearchBar />
+                    <Switch>
+                        <Route path="/overview/:itemId">
+                            <OverviewPage />
+                        </Route>
+                        <Route path="/">
+                            <HomePage />
+                        </Route>
+                    </Switch>
+                </div>
+            </UserContext.Provider>
+            </Router>
+        );
+    }
 }
 
 
@@ -49,15 +67,14 @@ function App() {
 // TODO: Need to update endpoints with REST API endpoints
 function HomePage() {
     return (
-        <div>
-            <SearchBar />
+        <Fragment>
             <h2>In the News</h2>
             <NewsFeed endpoint={null} items={json.news} />
             <h2>At ESDC</h2>
             <ESDCFeed endpoint={null} items={json.news} />
             <h2>Recommended for You</h2>
             <RecommendFeed endpoint={null} items={json.news} />
-        </div>
+        </Fragment>
     );
 }
 
@@ -69,17 +86,21 @@ function HomePage() {
 class Feed extends React.Component {
     constructor(props) {
         super(props);
-        
+
         // set any initial state coming from the props
         this.state = {
             endpoint: this.props.endpoint,
-            items: this.props.items
+            items: this.props.items,
+            userId: null,
+            timestamp: null
         }
+
+        this.fetchItems = this.fetchItems.bind(this);
     }
 
-    fetchItems(userId, timestamp) {
+    fetchItems() {
         // TODO: will set up to use this.endpoint
-        var newItems = dummyAJAXResponse(userId, timestamp);
+        var newItems = dummyAJAXResponse(this.state.userId, this.state.timestamp);
         json.news = json.news.concat(newItems);
         this.setState(state => {
             return { items: state.items.concat(newItems) };
@@ -93,11 +114,11 @@ class Feed extends React.Component {
 }
 
 class NewsFeed extends Feed {
-    componentDidMount() {
-        setInterval(() => {
-            this.fetchItems(null, null);
-        }, FETCH_DELAY*1000);
-    }
+    //componentDidMount() {
+        //setInterval(() => {
+            //this.fetchItems();
+        //}, FETCH_DELAY*1000);
+    //}
 
     render() {
         var listItems = this.getItems()
@@ -110,7 +131,12 @@ class NewsFeed extends Feed {
                     text={item.text}
                 />
             );
-        return <ul className="NewsFeed">{listItems}</ul>;
+        return (
+            <Fragment>
+                <a href="#" className="simfetch" onClick={this.fetchItems}>Simulate fetch</a>
+                <ul className="NewsFeed">{listItems}</ul>
+            </Fragment>
+        );
     }
 }
 
@@ -168,7 +194,7 @@ function NewsItem(props) {
 
 function NewsSummary(props) {
     return (
-        <div>
+        <div className="NewsSummary">
             <h3 className="title">{props.title}</h3>
             <p className="source">{props.source}</p>
             <p className="text">{props.text}</p>
@@ -195,7 +221,7 @@ function OverviewPage() {
     let item = json.news[itemId-1];  // TODO: this will actually need a DB query
 
     return (
-        <div>
+        <Fragment>
             <NewsSummary
                 key={item.id}
                 id={item.id}
@@ -205,7 +231,7 @@ function OverviewPage() {
             />
             <h2>Related News</h2>
             <p>Other news items here</p>
-        </div>
+        </Fragment>
     );
 }
 
