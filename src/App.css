@@ -12,7 +12,7 @@ body {
 .simfetch {
     position: fixed;
     top: 5px;
-    left: 5px;
+    right: 5px;
 }
 
 .MainTitle {
@@ -30,8 +30,7 @@ body {
     padding: 0;
 }
 
-.NewsItem {
-    padding: 20px;
+.NewsFeed li {
     animation-name: fadeIn;
     animation-duration: 1s;
 }
@@ -45,8 +44,12 @@ body {
     }
 }
 
-.NewsItem:nth-child(odd) {
+.NewsFeed li:nth-child(odd) {
     background: #f2f2f2;
+}
+
+.NewsItem {
+    padding: 20px;
 }
 
 .NewsItem .title {
@@ -69,6 +72,10 @@ body {
 
 .NewsItem .btn:visited {
     color: #284162;
+}
+
+.OverviewPage .NewsItem {
+    background: #f2f2f2;
 }
 
 .SearchBarContainer .row div:first-child {

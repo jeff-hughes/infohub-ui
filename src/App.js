@@ -123,7 +123,7 @@ class HomePage extends React.Component {
 
     render() {
         return (
-            <Fragment>
+            <div class="HomePage">
                 <a href="#" className="simfetch" onClick={this.fetchAllFeeds}>Simulate fetch</a>
                 <h2 className="font-regular">In the News</h2>
                 <NewsFeed items={this.getItems(this.state.newsfeed)} />
@@ -131,7 +131,7 @@ class HomePage extends React.Component {
                 <NewsFeed items={this.getItems(this.state.esdcfeed)} />
                 <h2 className="font-regular">Recommended for You</h2>
                 <NewsFeed items={this.getItems(this.state.recommendfeed)} />
-            </Fragment>
+            </div>
         );
     }
 }
@@ -139,43 +139,31 @@ class HomePage extends React.Component {
 function NewsFeed(props) {
     var listItems = props.items
         .map((item) =>
-            <NewsItem
-                key={item.id}
-                id={item.id}
-                source={item.source}
-                title={item.title}
-                text={item.text}
-            />
+            <li>
+                <NewsItem
+                    key={item.id}
+                    id={item.id}
+                    source={item.source}
+                    title={item.title}
+                    text={item.text}
+                    showMeta={true}
+                />
+            </li>
         );
     return <ul className="NewsFeed">{listItems}</ul>;
 }
 
-/**
- * Defines the component for a news item as a whole, including all
- * peripheral elements (e.g., overview link)
- */
 function NewsItem(props) {
     return (
-        <li className="NewsItem">
-            <div>
-                <NewsSummary
-                    id={props.id}
-                    source={props.source}
-                    title={props.title}
-                    text={props.text}
-                />
-                <p><Link to={"/overview/"+props.id} className="btn btn-xs cyan lighten-1">Overview</Link></p>
+        <div className="NewsItem">
+            <div className="NewsSummary">
+                <h3 className="title">{props.title}</h3>
+                <p className="source">{props.source}</p>
+                <p className="text">{props.text}</p>
             </div>
-        </li>
-    );
-}
-
-function NewsSummary(props) {
-    return (
-        <div className="NewsSummary">
-            <h3 className="title">{props.title}</h3>
-            <p className="source">{props.source}</p>
-            <p className="text">{props.text}</p>
+            {props.showMeta &&
+                <p><Link to={"/overview/"+props.id} className="btn btn-xs cyan lighten-1">Overview</Link></p>
+            }
         </div>
     );
 }
@@ -222,17 +210,18 @@ function OverviewPage() {
     let item = json_updated.news[itemId-1];  // TODO: this will actually need a DB query
 
     return (
-        <Fragment>
-            <NewsSummary
+        <div class="OverviewPage">
+            <NewsItem
                 key={item.id}
                 id={item.id}
                 source={item.source}
                 title={item.title}
                 text={item.text}
+                showMeta={false}
             />
             <h2>Related News</h2>
             <p>Other news items here</p>
-        </Fragment>
+        </div>
     );
 }
 
@@ -243,7 +232,11 @@ function OverviewPage() {
 function SearchPage() {
     let { terms } = useParams();
 
-    return <p>You searched for {terms}</p>;
+    return (
+        <div class="SearchPage">
+            <p>You searched for {terms}</p>
+        </div>
+    );
 }
 
 
