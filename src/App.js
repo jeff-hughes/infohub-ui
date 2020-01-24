@@ -10,15 +10,23 @@ import {
 
 import './App.css';
 
+// API endpoints for AJAX requests
+const ENDPOINTS = {
+    newsfeed: null,
+    esdcfeed: null,
+    recommendfeed: null
+};
+
 //const FETCH_DELAY = 5;  // delay in seconds between fetching news items
 var test_id_counter = 3; // incremented with each call of dummyAJAXResponse()
 
-var json = {
+var json_initial = {
     'news': [
         { 'id': 1, 'source': 'Hacker News', 'title': '1337 haX0rs are 1337', 'text': "Turns out I don't understand hacking either" },
         { 'id': 2, 'source': 'ESPN', 'title': 'Sportsball champions win the sportsball tournament again!', 'text': "I don't understand teh sports" }
     ]
 }
+var json_updated = JSON.parse(JSON.stringify(json_initial));  // deep copy of json_initial
 
 function dummyAJAXResponse(userId, timestamp) {
     var item = [{ 'id': test_id_counter, 'source': 'Generic News', 'title': 'Things happened again today', 'text': "Some things happened. Then other things happened as well. It was an exciting occasion." }];
@@ -46,6 +54,7 @@ class App extends React.Component {
             <Router>
             <UserContext.Provider value={this.state.user}>
                 <div className="App">
+                    <h1 className="MainTitle">Infohub</h1>
                     <SearchBar />
                     <Switch>
                         <Route path="/overview/:itemId">
@@ -69,111 +78,76 @@ class App extends React.Component {
 // HOME COMPONENTS -----------------------------------------------
 
 // TODO: Need to update endpoints with REST API endpoints
-function HomePage() {
-    return (
-        <Fragment>
-            <h2 class="font-regular">In the News</h2>
-            <NewsFeed endpoint={null} items={json.news} />
-            <h2 class="font-regular">At ESDC</h2>
-            <ESDCFeed endpoint={null} items={json.news} />
-            <h2 class="font-regular">Recommended for You</h2>
-            <RecommendFeed endpoint={null} items={json.news} />
-        </Fragment>
-    );
-}
-
-/**
- * This abstract class forms the basis for multiple feed components and
- * defines the basic functionality for making AJAX requests to update
- * feeds
- */
-class Feed extends React.Component {
+class HomePage extends React.Component {
     constructor(props) {
         super(props);
 
-        // set any initial state coming from the props
         this.state = {
-            endpoint: this.props.endpoint,
-            items: this.props.items,
-            userId: null,
+            newsfeed: json_initial.news,
+            esdcfeed: json_initial.news,
+            recommendfeed: json_initial.news,
             timestamp: null
-        }
+        };
 
-        this.fetchItems = this.fetchItems.bind(this);
+        this.fetchAllFeeds = this.fetchAllFeeds.bind(this);
     }
 
-    fetchItems() {
-        // TODO: will set up to use this.endpoint
-        var newItems = dummyAJAXResponse(this.state.userId, this.state.timestamp);
-        json.news = json.news.concat(newItems);
-        this.setState(state => {
-            return { items: state.items.concat(newItems) };
-        });
-    }
-
-    getItems() {
-        return this.state.items.slice()  // shallow copy of array
-            .sort((a, b) => b - a);      // sort descending
-    }
-}
-
-class NewsFeed extends Feed {
     //componentDidMount() {
         //setInterval(() => {
-            //this.fetchItems();
+            //this.fetchAllFeeds();
         //}, FETCH_DELAY*1000);
     //}
 
+    fetchAllFeeds() {
+        // for (const [feed, endpoint] of Object.entries(ENDPOINTS)) {
+        //     this.fetchItems(feed, endpoint);
+        // }
+        this.fetchItems('newsfeed', ENDPOINTS.newsfeed);
+    }
+
+    fetchItems(feed, endpoint) {
+        // TODO: change this to real AJAX request using endpoint
+        var newItems = dummyAJAXResponse(this.context.userId, this.state.timestamp);
+        this.setState(state => {
+            let obj = {};
+            json_updated.news = json_updated.news.concat(newItems);
+            obj[feed] = state[feed].concat(newItems);
+            return obj;
+        });
+    }
+
+    getItems(items) {
+        return items.slice()         // shallow copy of array
+            .sort((a, b) => b - a);  // sort descending
+    }
+
     render() {
-        var listItems = this.getItems()
-            .map((item) =>
-                <NewsItem
-                    key={item.id}
-                    id={item.id}
-                    source={item.source}
-                    title={item.title}
-                    text={item.text}
-                />
-            );
         return (
             <Fragment>
-                <a href="#" className="simfetch" onClick={this.fetchItems}>Simulate fetch</a>
-                <ul className="NewsFeed">{listItems}</ul>
+                <a href="#" className="simfetch" onClick={this.fetchAllFeeds}>Simulate fetch</a>
+                <h2 className="font-regular">In the News</h2>
+                <NewsFeed items={this.getItems(this.state.newsfeed)} />
+                <h2 className="font-regular">At ESDC</h2>
+                <NewsFeed items={this.getItems(this.state.esdcfeed)} />
+                <h2 className="font-regular">Recommended for You</h2>
+                <NewsFeed items={this.getItems(this.state.recommendfeed)} />
             </Fragment>
         );
     }
 }
 
-class ESDCFeed extends Feed {
-    render() {
-        var listItems = this.getItems()
-            .map((item) =>
-                <NewsItem
-                    key={item.id}
-                    id={item.id}
-                    source={item.source}
-                    title={item.title}
-                    text={item.text}
-                />
-            );
-        return <ul className="ESDCFeed">{listItems}</ul>;
-    }
-}
-
-class RecommendFeed extends Feed {
-    render() {
-        var listItems = this.getItems()
-            .map((item) =>
-                <NewsItem
-                    key={item.id}
-                    id={item.id}
-                    source={item.source}
-                    title={item.title}
-                    text={item.text}
-                />
-            );
-        return <ul className="RecommendFeed">{listItems}</ul>;
-    }
+function NewsFeed(props) {
+    var listItems = props.items
+        .map((item) =>
+            <NewsItem
+                key={item.id}
+                id={item.id}
+                source={item.source}
+                title={item.title}
+                text={item.text}
+            />
+        );
+    return <ul className="NewsFeed">{listItems}</ul>;
 }
 
 /**
@@ -190,7 +164,7 @@ function NewsItem(props) {
                     title={props.title}
                     text={props.text}
                 />
-                <p><Link to={"/overview/"+props.id} class="btn btn-xs cyan lighten-1">Overview</Link></p>
+                <p><Link to={"/overview/"+props.id} className="btn btn-xs cyan lighten-1">Overview</Link></p>
             </div>
         </li>
     );
@@ -226,10 +200,10 @@ class SearchBar extends React.Component {
         } else {
             return (
                 <form onSubmit={this.searchSubmit.bind(this)}>
-                    <div class="SearchBarContainer container-fluid">
-                        <div class="row">
-                            <div class="col-xs-10"><input type="text" className="SearchBar" id="SearchBar" /></div>
-                            <div class="col-xs-2"><input type="submit" className="SearchSubmit cyan" value="Search" /></div>
+                    <div className="SearchBarContainer container-fluid">
+                        <div className="row">
+                            <div className="col-xs-10"><input type="text" className="SearchBar" id="SearchBar" /></div>
+                            <div className="col-xs-2"><input type="submit" className="SearchSubmit cyan" value="Search" /></div>
                         </div>
                     </div>
                 </form>
@@ -245,7 +219,7 @@ class SearchBar extends React.Component {
 function OverviewPage() {
     let { itemId } = useParams();
 
-    let item = json.news[itemId-1];  // TODO: this will actually need a DB query
+    let item = json_updated.news[itemId-1];  // TODO: this will actually need a DB query
 
     return (
         <Fragment>

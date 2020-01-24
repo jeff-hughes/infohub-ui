@@ -15,7 +15,16 @@ body {
     left: 5px;
 }
 
-.NewsFeed, .ESDCFeed, .RecommendFeed {
+.MainTitle {
+    margin-top: -10px;
+    margin-bottom: 35px;
+}
+
+.MainTitle::first-letter {
+    font-size: 44px;
+}
+
+.NewsFeed {
     list-style-type: none;
     margin-bottom: 2em;
     padding: 0;
@@ -56,6 +65,10 @@ body {
 .NewsItem .btn {
     text-shadow: none;
     margin-top: 5px;
+}
+
+.NewsItem .btn:visited {
+    color: #284162;
 }
 
 .SearchBarContainer .row div:first-child {
