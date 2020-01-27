@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react';
-import { 
-    HashRouter as Router, 
-    Switch, 
-    Route, 
+import {
+    HashRouter as Router,
+    Switch,
+    Route,
     Link,
-    Redirect,
-    useParams
+    useParams,
+    withRouter
 } from 'react-router-dom';
 
 import './App.css';
@@ -29,9 +29,18 @@ var json_initial = {
 var json_updated = JSON.parse(JSON.stringify(json_initial));  // deep copy of json_initial
 
 function dummyAJAXResponse(userId, timestamp) {
-    var item = [{ 'id': test_id_counter, 'source': 'Generic News', 'title': 'Things happened again today', 'text': "Some things happened. Then other things happened as well. It was an exciting occasion." }];
+    let item = [{ 'id': test_id_counter, 'source': 'Generic News', 'title': 'Things happened again today', 'text': "Some things happened. Then other things happened as well. It was an exciting occasion." }];
     test_id_counter++;
     return item;
+}
+
+
+function AppContainer() {
+    return (
+        <Router>
+            <AppWithRouter />
+        </Router>
+    );
 }
 
 
@@ -45,34 +54,47 @@ class App extends React.Component {
             user: {
                 userId: null,
                 name: 'Guest'
-            }
+            },
+            search_terms: ''
         }
+        this.searchSubmit = this.searchSubmit.bind(this);
+    }
+
+    searchSubmit(terms) {
+        this.setState({ search_terms: terms });
     }
 
     render() {
+        // deal with SearchBar details and pass it along to all pages;
+        // this lets us control its state without having to pass all its props
+        // through the page props
+        let terms = this.state.search_terms;
+        if (!this.props.location.pathname.startsWith('/search/')) {
+            terms = '';
+        }
+        const searchBar = <SearchBarWithRouter onSearchSubmit={this.searchSubmit} search_terms={terms} />;
+
         return (
-            <Router>
             <UserContext.Provider value={this.state.user}>
                 <div className="App">
                     <h1 className="MainTitle">Infohub</h1>
-                    <SearchBar />
                     <Switch>
                         <Route path="/overview/:itemId">
-                            <OverviewPage />
+                            <OverviewPage searchBar={searchBar} />
                         </Route>
                         <Route path="/search/:terms">
-                            <SearchPage />
+                            <SearchPage searchBar={searchBar} />
                         </Route>
                         <Route path="/">
-                            <HomePage />
+                            <HomePage searchBar={searchBar} />
                         </Route>
                     </Switch>
                 </div>
             </UserContext.Provider>
-            </Router>
         );
     }
 }
+const AppWithRouter = withRouter(App);
 
 
 // HOME COMPONENTS -----------------------------------------------
@@ -93,9 +115,9 @@ class HomePage extends React.Component {
     }
 
     //componentDidMount() {
-        //setInterval(() => {
-            //this.fetchAllFeeds();
-        //}, FETCH_DELAY*1000);
+    //setInterval(() => {
+    //this.fetchAllFeeds();
+    //}, FETCH_DELAY*1000);
     //}
 
     fetchAllFeeds() {
@@ -107,7 +129,7 @@ class HomePage extends React.Component {
 
     fetchItems(feed, endpoint) {
         // TODO: change this to real AJAX request using endpoint
-        var newItems = dummyAJAXResponse(this.context.userId, this.state.timestamp);
+        let newItems = dummyAJAXResponse(this.context.userId, this.state.timestamp);
         this.setState(state => {
             let obj = {};
             json_updated.news = json_updated.news.concat(newItems);
@@ -123,25 +145,27 @@ class HomePage extends React.Component {
 
     render() {
         return (
-            <div class="HomePage">
-                <a href="#" className="simfetch" onClick={this.fetchAllFeeds}>Simulate fetch</a>
-                <h2 className="font-regular">In the News</h2>
-                <NewsFeed items={this.getItems(this.state.newsfeed)} />
-                <h2 className="font-regular">At ESDC</h2>
-                <NewsFeed items={this.getItems(this.state.esdcfeed)} />
-                <h2 className="font-regular">Recommended for You</h2>
-                <NewsFeed items={this.getItems(this.state.recommendfeed)} />
-            </div>
+            <Fragment>
+                {this.props.searchBar}
+                <div className="HomePage">
+                    <a href="#" className="simfetch" onClick={this.fetchAllFeeds}>Simulate fetch</a>
+                    <h2 className="font-regular">In the News</h2>
+                    <NewsFeed items={this.getItems(this.state.newsfeed)} />
+                    <h2 className="font-regular">At ESDC</h2>
+                    <NewsFeed items={this.getItems(this.state.esdcfeed)} />
+                    <h2 className="font-regular">Recommended for You</h2>
+                    <NewsFeed items={this.getItems(this.state.recommendfeed)} />
+                </div>
+            </Fragment>
         );
     }
 }
 
 function NewsFeed(props) {
-    var listItems = props.items
+    let listItems = props.items
         .map((item) =>
-            <li>
+            <li key={item.id}>
                 <NewsItem
-                    key={item.id}
                     id={item.id}
                     source={item.source}
                     title={item.title}
@@ -162,7 +186,7 @@ function NewsItem(props) {
                 <p className="text">{props.text}</p>
             </div>
             {props.showMeta &&
-                <p><Link to={"/overview/"+props.id} className="btn btn-xs cyan lighten-1">Overview</Link></p>
+                <p><Link to={"/overview/" + props.id} className="btn btn-xs cyan lighten-1">Overview</Link></p>
             }
         </div>
     );
@@ -171,57 +195,63 @@ function NewsItem(props) {
 class SearchBar extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            submitted: false,
-            search_terms: ''
-        };
+        this.state = { value: this.props.search_terms };
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    handleChange(e) {
+        this.setState({ value: e.target.value });
     }
 
     searchSubmit(e) {
         e.preventDefault();
-        this.setState({ submitted: true, search_terms: document.getElementById('SearchBar').value });
+        let search_terms = document.getElementById('SearchBar').value;
+        if (search_terms !== '') {
+            this.props.onSearchSubmit(search_terms);
+            this.props.history.push("/search/" + search_terms);  // redirect to search page
+        }
     }
 
     render() {
-        if (this.state.submitted) {
-            return <Redirect to={"/search/"+this.state.search_terms} />;
-        } else {
-            return (
-                <form onSubmit={this.searchSubmit.bind(this)}>
-                    <div className="SearchBarContainer container-fluid">
-                        <div className="row">
-                            <div className="col-xs-10"><input type="text" className="SearchBar" id="SearchBar" /></div>
-                            <div className="col-xs-2"><input type="submit" className="SearchSubmit cyan" value="Search" /></div>
-                        </div>
+        return (
+            <form onSubmit={this.searchSubmit.bind(this)}>
+                <div className="SearchBarContainer container-fluid">
+                    <div className="row">
+                        <div className="col-xs-10"><input type="text" className="SearchBar" id="SearchBar" value={this.state.value} onChange={this.handleChange} /></div>
+                        <div className="col-xs-2"><input type="submit" className="SearchSubmit cyan" value="Search" /></div>
                     </div>
-                </form>
-            );
-        }
+                </div>
+            </form>
+        );
     }
 }
+const SearchBarWithRouter = withRouter(SearchBar);
 
 
 
 // OVERVIEW COMPONENTS -----------------------------------------------
 
-function OverviewPage() {
+function OverviewPage(props) {
     let { itemId } = useParams();
 
-    let item = json_updated.news[itemId-1];  // TODO: this will actually need a DB query
+    let item = json_updated.news[itemId - 1];  // TODO: this will actually need a DB query
 
     return (
-        <div class="OverviewPage">
-            <NewsItem
-                key={item.id}
-                id={item.id}
-                source={item.source}
-                title={item.title}
-                text={item.text}
-                showMeta={false}
-            />
-            <h2>Related News</h2>
-            <p>Other news items here</p>
-        </div>
+        <Fragment>
+            {props.searchBar}
+            <div className="OverviewPage">
+                <NewsItem
+                    key={item.id}
+                    id={item.id}
+                    source={item.source}
+                    title={item.title}
+                    text={item.text}
+                    showMeta={false}
+                />
+                <h2>Related News</h2>
+                <p>Other news items here</p>
+            </div>
+        </Fragment>
     );
 }
 
@@ -229,18 +259,18 @@ function OverviewPage() {
 
 // SEARCH COMPONENTS -----------------------------------------------
 
-function SearchPage() {
+function SearchPage(props) {
     let { terms } = useParams();
 
     return (
-        <div class="SearchPage">
-            <p>You searched for {terms}</p>
-        </div>
+        <Fragment>
+            {props.searchBar}
+            <div className="SearchPage">
+                <p>You searched for "{terms}"</p>
+            </div>
+        </Fragment>
     );
 }
 
 
-
-
-
-export default App;
+export default AppContainer;
